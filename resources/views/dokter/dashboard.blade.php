@@ -1,7 +1,7 @@
 @extends('layout.main')
 @section('title', 'Dokter Page')
 
-@section('isi')
+@section('content')
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->

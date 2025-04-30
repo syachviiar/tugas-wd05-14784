@@ -1,58 +1,72 @@
 @extends('layout.main')
 @section('title', 'Dokter Edit Obat Page')
 
-@section('isi')
-    <div class="content-wrapper">
-        <div class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 class="m-0">Manajemen Obat</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="/">Home</a></li>
-                            <li class="breadcrumb-item active">Dashboard</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
+@section('content')
+<style>
+    .card {
+        border-radius: 0.75rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: none;
+    }
 
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Edit Data Obat</h3>
-                        </div>
-                        <form method="POST" action="{{ route('dokter.obat.update', $obat->id) }}">
-                            @csrf
-                            @method('PUT')
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Nama Obat</label>
-                                    <input value="{{ $obat->nama_obat }}" type="text" name="nama_obat" class="form-control"
-                                        id="exampleInputEmail1" placeholder="Input obat's name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Kemasan</label>
-                                    <input value="{{ $obat->kemasan }}" type="text" name="kemasan" class="form-control"
-                                        id="exampleInputEmail1" placeholder="Input kemasan's name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Harga</label>
-                                    <input value="{{ $obat->harga }}" type="number" name="harga" class="form-control"
-                                        id="exampleInputEmail1" placeholder="Input the price">
-                                </div>
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .btn-primary {
+        background-color: #005b8b;
+        border-color: #005b8b;
+    }
+
+    .btn-primary:hover {
+        background-color: #003049;
+        border-color: #003049;
+    }
+
+    .content-wrapper {
+        padding: 2rem 3rem;
+        background-color: #f0f2f5;
+    }
+
+</style>
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid"></div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card card-primary shadow-sm">
+                    <div class="card-header">
+                        <h3 class="card-title">Edit Obat</h3>
+                    </div>
+                    <form method="POST" action="{{ route('dokter.obat.update', $obat->id) }}">
+                        @csrf
+                        @method('PUT')
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="nama_obat">Nama Obat</label>
+                                <input value="{{ $obat->nama_obat }}" type="text" name="nama_obat" class="form-control" id="nama_obat" placeholder="Masukkan nama obat">
                             </div>
-                            <div class="card-footer">
+                            <div class="form-group">
+                                <label for="kemasan">Kemasan</label>
+                                <input value="{{ $obat->kemasan }}" type="text" name="kemasan" class="form-control" id="kemasan" placeholder="Masukkan jenis kemasan">
+                            </div>
+                            <div class="form-group">
+                                <label for="harga">Harga</label>
+                                <input value="{{ $obat->harga }}" type="number" name="harga" class="form-control" id="harga" placeholder="Masukkan harga obat">
+                            </div>
+                            <div>
                                 <button type="submit" class="btn btn-primary">Update Data Obat</button>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 @endsection

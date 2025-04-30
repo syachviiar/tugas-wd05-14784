@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ObatController;
-use App\Models\Periksa;
+use App\Http\Controllers\PeriksaController; // Pastikan PeriksaController diimport
+use App\Models\Periksa; // Pastikan model Periksa diimport
 
 /* Halaman Awal */
 Route::get('/', function () {
@@ -18,7 +19,6 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard umum (bisa kamu kembangkan lagi)
 Route::get('/dashboard', [DashboardController::class, 'index']);
 Route::get('/tables', [DashboardController::class, 'tables']);
 
@@ -35,21 +35,30 @@ Route::middleware('auth')->group(function () {
             return view('pasien.periksa');
         })->name('pasien.periksa');
 
-        Route::get('/pasien/riwayat', function () {
-            return view('pasien.riwayat');
-        })->name('pasien.riwayat');
+        // Riwayat pemeriksaan pasien, mengarah ke PeriksaController@riwayatPasien
+        Route::get('/pasien/riwayat', [PeriksaController::class, 'riwayatPasien'])->name('pasien.riwayat');
+        Route::post('/pasien/periksa', [PeriksaController::class, 'store'])->name('pasien.periksa.store');
+        Route::delete('/periksa/{id}', [PeriksaController::class, 'destroy'])->name('periksa.hapus');
     });
 
     Route::middleware('role:dokter')->group(function () {
         Route::get('/dokter', function () {
             return view('dokter.dashboard');
         })->middleware('auth')->name('dokter.dashboard');
-
+        
+        // Fitur periksa dokter
         Route::get('/dokter/periksa', function () {
-            $periksas = Periksa::all();
-            return view('dokter.periksa', compact('periksas'));
-        })->name('dokter.periksa');
+            $periksa = Periksa::all();  // Ambil semua data periksa
+            return view('dokter.periksa', compact('periksa'));
+        })->name('dokter.periksa');        
 
+        // Rute untuk menampilkan halaman edit pemeriksaan dokter
+        Route::get('/dokter/periksa/{id}/edit', [PeriksaController::class, 'edit'])->name('dokter.edit_periksa');
+
+        // Rute untuk menyimpan hasil pemeriksaan yang telah diupdate oleh dokter
+        Route::put('/dokter/periksa/{id}', [PeriksaController::class, 'update'])->name('dokter.update_periksa');
+        
+        // CRUD Obat
         Route::get('/dokter/obat', [ObatController::class, 'index'])->name('dokter.obat');
         Route::post('/dokter/obat', [ObatController::class, 'store'])->name('dokter.obat.store');
         Route::get('/dokter/obat/{id}', [ObatController::class, 'edit'])->name('dokter.obat.edit');

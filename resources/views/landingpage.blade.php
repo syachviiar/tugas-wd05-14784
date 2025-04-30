@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Poliklinik - Sistem Kesehatan Profesional</title>
+  <title>HealthLink - Sistem Kesehatan Profesional</title>
+  <meta name="description" content="HealthLink - Layanan Kesehatan Digital Profesional, Terhubung, dan Cepat. Sistem kesehatan modern untuk semua kebutuhan medis Anda.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --primary-color: #003049;
@@ -25,7 +28,7 @@
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Inter', sans-serif;
       background-color: var(--background);
       color: var(--text-dark);
       line-height: 1.6;
@@ -69,7 +72,7 @@
       font-weight: 600;
       border-radius: 0.5rem;
     }
-
+    
     .btn {
       padding: 0.6rem 1.2rem;
       border: none;
@@ -82,16 +85,32 @@
       color: var(--white);
     }
 
-    .btn-outline {
-      border: 2px solid var(--primary-color);
-      background: transparent;
-      color: var(--primary-color);
+    .btn-large {
+      padding: 0.9rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      box-shadow: 0 6px 16px rgba(0, 48, 73, 0.15);
     }
 
     .btn:hover {
       background-color: var(--secondary-color);
       color: var(--white);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(102, 155, 188, 0.3);
+    }
+
+    header nav a {
+      position: relative;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header nav a:hover {
+      background-color: rgba(102, 155, 188, 0.2); /* secondary color dengan transparansi */
+      color: var(--primary-color);
     }
 
     /* Hero */
@@ -216,6 +235,17 @@
       color: var(--primary-color);
     }
 
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      transition: all 0.6s ease-out;
+    }
+
+    .scroll-animate.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
     /* Footer */
     footer {
       background: #1d3557;
@@ -237,7 +267,7 @@
   <!-- Header -->
   <header>
     <div class="container">
-      <h1>Poliklinik</h1>
+      <h1>HealthLink</h1>
       <nav>
         <a href="#home">Beranda</a>
         <a href="#features">Fitur</a>
@@ -251,15 +281,13 @@
   <section class="hero scroll-animate" id="home">
     <div class="container">
       <div>
-        <h2>Layanan Kesehatan Profesional & Cepat</h2>
-        <p>Poliklinik menghadirkan solusi medis terpercaya dengan sistem digital modern, menjangkau pasien di mana saja, kapan saja.</p>
-        <div>
-          <a href="{{ route('register') }}" class="btn btn-outline">Register</a>
+        <h2>Sistem Kesehatan Digital Terdepan</h2>
+        <p>HealthLink menghadirkan solusi medis modern berbasis teknologi digital, memudahkan pasien mengakses layanan kesehatan kapan saja dan di mana saja.</p>
+          <a href="{{ route('register') }}" class="btn btn-primary btn-large">Daftar Sekarang</a>       
         </div>
       </div>
     </div>
   </section>  
-  
 
   <!-- Features -->
   <section class="features scroll-animate" id="features">
@@ -293,21 +321,24 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2025 Poliklinik. Seluruh hak cipta dilindungi.</p>
+    <p>&copy; 2025 HealthLink. Seluruh hak cipta dilindungi.</p>
   </footer>
 
   <!-- Scroll Animation JS -->
   <script>
     function animateScroll() {
-      document.querySelectorAll('.scroll-animate').forEach(el => {
+      const elements = document.querySelectorAll('.scroll-animate');
+      elements.forEach((el, index) => {
         const rect = el.getBoundingClientRect();
         const trigger = window.innerHeight * 0.85;
         if (rect.top < trigger) {
-          el.classList.add('active');
+          setTimeout(() => {
+            el.classList.add('active');
+          }, index * 450);
         }
       });
     }
-
+  
     window.addEventListener('scroll', animateScroll);
     window.addEventListener('load', animateScroll);
   </script>

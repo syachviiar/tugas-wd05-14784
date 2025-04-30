@@ -27,6 +27,7 @@
   <link rel="stylesheet" href={{ asset("plugins/daterangepicker/daterangepicker.css") }}>
   <!-- summernote -->
   <link rel="stylesheet" href={{ asset("plugins/summernote/summernote-bs4.min.css") }}>
+  @yield('style')
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -215,8 +216,7 @@
         @if (Auth::user()->role == 'dokter')
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <!-- Add icons to the links using the .nav-icon class
-        with font-awesome or any other icon font library -->
+          <!-- Add icons to the links using the .nav-icon classwith font-awesome or any other icon font library -->
           <li class="nav-item">
             <a href="{{ route('dokter.dashboard') }}"
             class="nav-link {{ request()->routeIs('dokter.dashboard') ? 'active' : '' }}">
@@ -229,6 +229,7 @@
           <li class="nav-item">
             <a href="{{ route('dokter.periksa') }}"
             class="nav-link {{ request()->routeIs('dokter.periksa') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-stethoscope"></i>
             <p>
               Periksa
             </p>
@@ -237,18 +238,18 @@
           <li class="nav-item">
             <a href="{{ route('dokter.obat') }}"
             class="nav-link {{ request()->routeIs('dokter.obat') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-pills"></i>
             <p>
               Obat
             </p>
             </a>
           </li>
-    @elseif (Auth::user()->role = 'pasien')
+        @elseif (Auth::user()->role = 'pasien')
         <!-- Sidebar Menu Pasien-->
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
           data-accordion="false">
-          <!-- Add icons to the links using the .nav-icon class
-      with font-awesome or any other icon font library -->
+          <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
           <li class="nav-item">
             <a href="{{ route('pasien.dashboard') }}"
             class="nav-link {{ request()->routeIs('pasien.dashboard') ? 'active' : '' }}">
@@ -261,6 +262,7 @@
           <li class="nav-item">
             <a href="{{ route('pasien.periksa') }}"
             class="nav-link {{ request()->routeIs('pasien.periksa') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-stethoscope"></i>
             <p>
               Periksa
             </p>
@@ -269,31 +271,30 @@
           <li class="nav-item">
             <a href="{{ route('pasien.riwayat') }}"
             class="nav-link {{ request()->routeIs('pasien.riwayat') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-file-medical-alt"></i>
             <p>
               Riwayat
             </p>
             </a>
           </li>
-  @else
-@endif
-                <li class="nav-item">
-                  <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="nav-link">
-                      <i class="nav-icon fas fa-sign-out-alt"></i>
-                      <p>
-                        Logout
-                      </p>
-                    </button>
-                  </form>
-                </li>
-              </ul>
-            </nav>
-            <!-- /.sidebar-menu -->
+        @else
+        @endif
+          <li class="nav-item">
+            <form action="{{ route('logout') }}" method="POST">
+              @csrf
+              <button type="submit" class="nav-link">
+                <i class="nav-icon fas fa-sign-out-alt"></i>
+                <p>
+                  Logout
+                </p>
+              </button>
+            </form>
+          </li>
+        </ul>
+      </nav>
       </div>
-      <!-- /.sidebar -->
     </aside>
-    @yield('isi')
+    @yield('content')
 
     <!-- /.content-wrapper -->
     <footer class="main-footer">
@@ -346,6 +347,7 @@
   <script src={{ asset("dist/js/demo.js") }}></script>
   <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
   <script src={{ asset("dist/js/pages/dashboard.js") }}></script>
+  @yield('script')
 </body>
 
 </html>
