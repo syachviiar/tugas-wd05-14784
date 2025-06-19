@@ -2,117 +2,182 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\DaftarPoli;
+use App\Models\JadwalPeriksa;
+use App\Models\Poli;
+use App\Models\Dokter;
 use App\Models\Periksa;
-use App\Models\User;
-use App\Models\Obat;
 use App\Models\DetailPeriksa;
+use App\Models\Obat;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PeriksaController extends Controller
 {
-    // Method untuk pasien melihat riwayat pemeriksaan mereka
-    public function riwayatPasien()
+    public function index()
     {
-        // Mengambil riwayat pemeriksaan berdasarkan pasien yang sedang login dan memuat relasi
-        $riwayat = Periksa::where('id_pasien', Auth::id())
-            ->with(['pasien', 'dokter', 'detailPeriksa.obat'])  // Memuat relasi pasien, dokter, detailPeriksa, dan obat
+        $polis = Poli::all();
+        $riwayat = DaftarPoli::where('pasien_id', Auth::user()->pasien->id)
+            ->with(['poli', 'jadwal.dokter'])
+            ->orderBy('created_at', 'desc')
             ->get();
-        
-        return view('pasien.riwayat', compact('riwayat'));
+
+        return view('pasien.periksa', compact('polis', 'riwayat'));
     }
 
-    // Method untuk dokter melihat riwayat pemeriksaan pasien
-    public function riwayatDokter()
+    // ✅ AJAX: Ambil dokter berdasarkan poli
+    public function getDokterByPoli($poliId)
     {
-        // Mengambil riwayat pemeriksaan berdasarkan dokter yang sedang login dan memuat relasi
-        $riwayat = Periksa::where('id_dokter', Auth::id())
-            ->with(['pasien', 'dokter', 'detailPeriksa.obat'])  // Juga sekalian memuat detailPeriksa dan obat untuk dokter
-            ->get();
-        
-        return view('dokter.riwayat', compact('riwayat'));
+        try {
+            $dokters = Dokter::where('poli_id', $poliId)
+                ->with('user:id,name')
+                ->get()
+                ->map(function ($dokter) {
+                    return [
+                        'id' => $dokter->id,
+                        'name' => $dokter->user->name,
+                    ];
+                });
+
+            return response()->json($dokters);
+        } catch (\Exception $e) {
+            Log::error('Error getDokterByPoli: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengambil data dokter'], 500);
+        }
     }
 
-    // Untuk pasien mengisi form periksa (POST)
+    // ✅ AJAX: Ambil jadwal berdasarkan dokter
+    public function getJadwalByDokter($dokterId)
+    {
+        try {
+            $jadwals = JadwalPeriksa::where('dokter_id', $dokterId)
+                ->where('status', 'Aktif')
+                ->get(['id', 'hari', 'jam_mulai', 'jam_selesai']);
+
+            return response()->json($jadwals);
+        } catch (\Exception $e) {
+            Log::error('Error getJadwalByDokter: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengambil data jadwal'], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'id_dokter' => 'required|exists:users,id',   // Validasi dokter yang dipilih
-            'tgl_periksa' => 'required|date',            // Validasi tanggal periksa
-            'catatan' => 'required|string',              // Validasi catatan
+            'poli_id' => 'required|exists:polis,id',
+            'dokter_id' => 'required|exists:dokters,id',
+            'jadwal_id' => 'required|exists:jadwal_periksa,id',
+            'keluhan' => 'required|string'
         ]);
 
-        // Membuat entri baru di tabel periksa
-        Periksa::create([
-            'id_pasien' => Auth::id(),                // Mengambil ID pasien yang sedang login
-            'id_dokter' => $request->id_dokter,      // ID dokter yang dipilih
-            'tgl_periksa' => $request->tgl_periksa,  // Tanggal periksa
-            'catatan' => $request->catatan,          // Catatan medis
-            'biaya_periksa' => 0,                    // Biaya periksa, bisa diubah manual atau otomatis nanti
-            'status' => 'menunggu',                  // Status pemeriksaan, default menunggu
-        ]);
+        DB::beginTransaction();
+        try {
+            $antrian = DaftarPoli::where('jadwal_id', $request->jadwal_id)
+                ->whereDate('created_at', today())
+                ->count() + 1;
 
-        // Redirect ke riwayat pasien dengan pesan sukses
-        return redirect()->route('pasien.riwayat')->with('success', 'Berhasil daftar periksa.');
+            $daftarPoli = DaftarPoli::create([
+                'pasien_id' => Auth::user()->pasien->id,
+                'poli_id' => $request->poli_id,
+                'jadwal_id' => $request->jadwal_id,
+                'keluhan' => $request->keluhan,
+                'no_antrian' => $antrian,
+                'status' => 'Menunggu'
+            ]);
+
+            Periksa::create([
+                'daftar_poli_id' => $daftarPoli->id,
+                'status' => 'Menunggu'
+            ]);
+
+            DB::commit();
+            return redirect()->route('pasien.periksa')
+                ->with('success', 'Berhasil mendaftar poli. Nomor antrian Anda: ' . $antrian);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error dalam store: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
-    // Untuk dokter melihat form pemeriksaan (GET)
-    public function edit($id)
+    public function batal($id)
     {
-        // Menampilkan data pemeriksaan yang akan diedit oleh dokter
-        $periksa = Periksa::findOrFail($id);
-        $obats = Obat::all();  // Mengambil semua obat yang tersedia
-        return view('dokter.edit_periksa', compact('periksa', 'obats'));
+        DB::beginTransaction();
+        try {
+            $daftar = DaftarPoli::where('id', $id)
+                ->where('pasien_id', Auth::user()->pasien->id)
+                ->where('status', 'Menunggu')
+                ->firstOrFail();
+
+            $daftar->update(['status' => 'Batal']);
+            $daftar->periksa->update(['status' => 'Batal']);
+
+            DB::commit();
+            return redirect()->route('pasien.periksa')
+                ->with('success', 'Pendaftaran berhasil dibatalkan');
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error dalam batal: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
-    // Untuk dokter menyimpan hasil pemeriksaan (PUT)
     public function update(Request $request, $id)
     {
         $request->validate([
-            'diagnosa' => 'required|string',    // Diagnosa yang diberikan dokter
-            'rekomendasi' => 'required|string', // Rekomendasi yang diberikan dokter
-            'obat' => 'array',                   // Array of obat ID
+            'tgl_periksa' => 'required|date',
+            'catatan' => 'required|string',
+            'status' => 'required|in:Menunggu,Selesai,Batal',
+            'obat_id' => 'required|array|min:1',
+            'obat_id.*' => 'exists:obat,id',
         ]);
 
-        // Mengambil data pemeriksaan berdasarkan ID
-        $periksa = Periksa::findOrFail($id);
+        DB::beginTransaction();
+        try {
+            $periksa = Periksa::findOrFail($id);
 
-        // Update data pemeriksaan dengan diagnosa, rekomendasi, dan status
-        $periksa->update([
-            'diagnosa' => $request->diagnosa,
-            'rekomendasi' => $request->rekomendasi,
-            'status' => 'selesai',  // Update status menjadi selesai setelah pemeriksaan
-        ]);
+            $periksa->update([
+                'tgl_periksa' => $request->tgl_periksa,
+                'catatan' => $request->catatan,
+                'status' => $request->status,
+            ]);
 
-        // Menghapus detail periksa (obat yang sudah ada) yang lama jika ada
-        $periksa->detailPeriksa()->delete();
+            // Hapus detail lama
+            $periksa->detailPeriksa()->delete();
 
-        // Insert detail periksa (obat yang diberikan) jika ada
-        if ($request->has('obat')) {
-            foreach ($request->obat as $obatId) {
-                DetailPeriksa::create([
-                    'id_periksa' => $periksa->id,   // ID pemeriksaan
-                    'id_obat' => $obatId,           // ID obat yang diberikan
+            // Tambah ulang detail
+            foreach ($request->obat_id as $obatId) {
+                $periksa->detailPeriksa()->create([
+                    'id_obat' => $obatId
                 ]);
             }
-        }
 
-        // Redirect ke halaman periksa dokter dengan pesan sukses
-        return redirect()->route('dokter.periksa')->with('success', 'Berhasil menyimpan pemeriksaan.');
+            // Biaya tetap
+            $periksa->update(['biaya_periksa' => 150000]);
+
+            DB::commit();
+            return redirect()->route('dokter.jadwal-periksa.index')
+                ->with('success', 'Pemeriksaan berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Gagal update periksa: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui pemeriksaan: ' . $e->getMessage());
+        }
     }
 
-    public function destroy($id)
+    public function show($id)
     {
-        // Cari riwayat pemeriksaan berdasarkan ID
-        $periksa = Periksa::findOrFail($id);
+        $periksa = Periksa::with([
+            'daftarPoli.pasien',
+            'daftarPoli.jadwal.dokter.user',
+            'detailPeriksa.obat'
+        ])->findOrFail($id);        
 
-        // Hapus detail periksa (obat)
-        $periksa->detailPeriksa()->delete();
-
-        // Hapus pemeriksaan itu sendiri
-        $periksa->delete();
-
-        // Redirect dengan pesan sukses
-        return redirect()->route('pasien.riwayat')->with('success', 'Riwayat pemeriksaan berhasil dihapus.');
+        return view('pasien.periksa.show', compact('periksa'));
     }
 }

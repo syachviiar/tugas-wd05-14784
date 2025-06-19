@@ -10,10 +10,10 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (auth()->check() && auth()->user()->role === $role) {
-            return $next($request);
+        if (!$request->user() || $request->user()->role !== $role) {
+            return redirect('no-access');
         }
 
-        return response()->view('errors.unauthorized', [], 403); // Buat view ini nanti
+        return $next($request);
     }
-}
+} 

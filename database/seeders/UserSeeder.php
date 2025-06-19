@@ -2,34 +2,33 @@
 
 namespace Database\Seeders;
 
-use Attribute;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        User::create([
-            'nama' => 'Dokter',
-            'alamat' => 'Jl.Dokter No. 1',
-            'no_hp' => '081225099450',
-            'email' => 'dokter@gmail.com',
-            'role' => 'dokter',
-            'password' => bcrypt('dokter123'),
+        // Dokter
+        User::insert([
+            ['name' => 'dr. Nanda Syafira', 'email' => 'nanda@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
+            ['name' => 'dr. Wahyu Ramadhan', 'email' => 'wahyu@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
+            ['name' => 'dr. Sinta Ayu', 'email' => 'sinta@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
+            ['name' => 'dr. Aldi Firmansyah', 'email' => 'aldi@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
+            ['name' => 'dr. Rina Pratiwi', 'email' => 'rina@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
+            ['name' => 'dr. Faiz Ramli', 'email' => 'faiz@rs.com', 'password' => bcrypt('password'), 'role' => 'dokter'],
         ]);
 
-        User::create([
-            'nama' => 'Pasien',
-            'alamat' => 'Jl.Pasien No. 1',
-            'no_hp' => '081225099450',
-            'email' => 'pasien@gmail.com',
-            'role' => 'pasien',
-            'password' => bcrypt('pasien123'),
+        // Pasien
+        User::insert([
+            ['name' => 'Rudi Hartono', 'email' => 'rudi@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Dina Ayu', 'email' => 'dina@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Andriansyah', 'email' => 'andri@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Maya Lestari', 'email' => 'maya@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Galih Saputra', 'email' => 'galih@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Sari Wulandari', 'email' => 'sari@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Teguh Prasetyo', 'email' => 'teguh@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
+            ['name' => 'Anisa Zahra', 'email' => 'anisa@gmail.com', 'password' => bcrypt('password'), 'role' => 'pasien'],
         ]);
     }
 }

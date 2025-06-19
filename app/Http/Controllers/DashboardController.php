@@ -1,34 +1,22 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard.index');
+        return view('dashboard');
     }
-    public function dokter()
+
+    public function tables()
     {
-        return view('dokter.dashboard');
+        return view('tables');
     }
-    public function dokterperiksa()
-    {
-        return view('dokter.periksa');
-    }
+
     public function pasien()
     {
         return view('pasien.dashboard');
     }
-    public function pasienperiksa()
-    {
-        return view('pasien.periksa');
-    }
-    public function pasienriwayat()
-    {
-        return view('pasien.riwayat');
-    }
 }
-
